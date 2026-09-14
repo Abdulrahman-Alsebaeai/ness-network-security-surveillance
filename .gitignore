@@ -1,0 +1,35 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime database, evidence, reports, and logs
+data/*.sqlite
+data/*.sqlite3
+reports/
+evidence/
+logs/
+*.log
+
+# Local model and generated artifacts
+models/
+*.onnx
+*.pt
+*.pth
+*.joblib
+*.pkl
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
