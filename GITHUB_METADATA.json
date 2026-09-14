@@ -1,0 +1,17 @@
+{
+  "description": "Defensive cybersecurity monitoring platform with incident detection, evidence preservation, cyber-range scenarios, WebSocket updates, risk analysis, reports, and Arduino alerts.",
+  "topics": [
+    "python",
+    "flask",
+    "cybersecurity",
+    "network-security",
+    "intrusion-detection",
+    "incident-response",
+    "websocket",
+    "sqlite",
+    "arduino",
+    "security-monitoring",
+    "cyber-range",
+    "rtl"
+  ]
+}

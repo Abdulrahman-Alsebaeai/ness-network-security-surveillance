@@ -1,0 +1,8 @@
+NESS Simple Integrated Cyber Lab
+
+Run: run_windows.bat
+Open: http://127.0.0.1:5000
+Topology: Cyber Range -> Network Topology
+
+No WSL, VM, Docker or packet driver is required.
+The lab uses an integrated logical topology and real local HTTP/TCP/UDP sockets.

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="assets/js/language-bootstrap.js"></script>
+<link rel="stylesheet" href="assets/vendor/fonts/fonts.css">
+<link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+
+<title>NESS | 404</title>
+</head>
+<body class="app-body " data-page="404.html">
+    <aside class="sidebar" id="sidebar">
+        <a class="brand" href="dashboard.html" aria-label="NESS Dashboard">
+            <span class="brand-mark"><i class="fa-solid fa-shield-halved"></i></span>
+            <span class="brand-text"><strong>NESS</strong><small>Network Security & Surveillance</small></span>
+        </a>
+        <nav class="sidebar-nav">
+            <div class="nav-section">Command</div>
+<a href="dashboard.html" class="nav-link" data-nav="dashboard.html"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+<a href="incidents.html" class="nav-link" data-nav="incidents.html"><i class="fa-solid fa-triangle-exclamation"></i><span>Incidents</span></a>
+<a href="alerts.html" class="nav-link" data-nav="alerts.html"><i class="fa-solid fa-bell"></i><span>Real-time Alerts</span></a>
+<div class="nav-section">Investigation</div>
+<a href="evidence.html" class="nav-link" data-nav="evidence.html"><i class="fa-solid fa-fingerprint"></i><span>Evidence</span></a>
+<a href="ai-analysis.html" class="nav-link" data-nav="ai-analysis.html"><i class="fa-solid fa-brain"></i><span>AI Analysis</span></a>
+<a href="logs.html" class="nav-link" data-nav="logs.html"><i class="fa-solid fa-clipboard-list"></i><span>Logs</span></a>
+<a href="ints-tracking.html" class="nav-link" data-nav="ints-tracking.html"><i class="fa-solid fa-route"></i><span>INTS Tracking</span></a>
+<div class="nav-section">Operations</div>
+<a href="network-topology.html" class="nav-link" data-nav="network-topology.html"><i class="fa-solid fa-diagram-project"></i><span>Cyber Range</span></a>
+<a href="network-devices.html" class="nav-link" data-nav="network-devices.html"><i class="fa-solid fa-network-wired"></i><span>Network Devices</span></a>
+<a href="network-traffic.html" class="nav-link" data-nav="network-traffic.html"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>Live Network Traffic</span></a>
+<a href="reports.html" class="nav-link" data-nav="reports.html"><i class="fa-solid fa-file-lines"></i><span>Reports</span></a>
+<div class="nav-section">Administration</div>
+<a href="users.html" class="nav-link" data-nav="users.html"><i class="fa-solid fa-users"></i><span>Users</span></a>
+<a href="roles-permissions.html" class="nav-link" data-nav="roles-permissions.html"><i class="fa-solid fa-user-shield"></i><span>Roles & Permissions</span></a>
+<a href="settings.html" class="nav-link" data-nav="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="operator-card">
+                <div class="avatar">AU</div>
+                <div>
+                    <strong>Authenticated User</strong>
+                    <small>Administrator</small>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="app-shell">
+        <header class="topbar">
+            <button class="icon-button mobile-menu" data-toggle-sidebar aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+            <div class="topbar-context">
+                <span class="status-dot online"></span>
+                <span>Monitoring online</span>
+            </div>
+            <div class="topbar-actions">
+                <a class="role-pill" href="user-profile.html"><i class="fa-solid fa-id-badge"></i> User Role</a>
+                <button class="icon-button" data-toast="Notifications opened" onclick="location.href='alerts.html'" aria-label="Notifications"><i class="fa-regular fa-bell"></i><span class="notification-badge">0</span></button>
+                <button class="icon-button" data-toast="Secure lock screen opened" onclick="location.href='lock-screen.html'" aria-label="Lock"><i class="fa-solid fa-lock"></i></button>
+                <button class="logout-button" onclick="NESS.logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button>
+            </div>
+        </header>
+        <main class="page">
+            <section class="page-header">
+                <div>
+                    <div class="breadcrumb">NESS Platform / Error / 404</div>
+                    <h1>404 Page</h1>
+                </div>
+                <div class="page-header-actions">
+                    <button class="button button-secondary" onclick="NESS.refreshPage()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                </div>
+            </section>
+            <section class="panel empty-state"><div><div class="error-code">404</div><h2>Page Not Found</h2><p style="color:var(--muted)">The page you requested is not available in the NESS console.</p><button class="button button-primary" onclick="location.href='dashboard.html'">Back to dashboard</button></div></section>
+        </main>
+    </div>
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+    <div class="sidebar-backdrop" data-toggle-sidebar></div>
+<script src="assets/js/data-renderers.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/api-client.js"></script>
+
+</body>
+</html>

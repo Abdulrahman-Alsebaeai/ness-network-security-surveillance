@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="assets/js/language-bootstrap.js"></script>
+<link rel="stylesheet" href="assets/vendor/fonts/fonts.css"><link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css"><link rel="stylesheet" href="assets/css/style.css">
+<title>NESS | Cyber Range Topology</title>
+</head>
+<body class="app-body" data-page="network-topology.html">
+<aside class="sidebar" id="sidebar">
+<a class="brand" href="dashboard.html"><span class="brand-mark"><i class="fa-solid fa-shield-halved"></i></span><span class="brand-text"><strong>NESS</strong><small>Network Security & Surveillance</small></span></a>
+<nav class="sidebar-nav">
+<div class="nav-section">Command</div>
+<a href="dashboard.html" class="nav-link" data-nav="dashboard.html"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+<a href="incidents.html" class="nav-link" data-nav="incidents.html"><i class="fa-solid fa-triangle-exclamation"></i><span>Incidents</span></a>
+<a href="alerts.html" class="nav-link" data-nav="alerts.html"><i class="fa-solid fa-bell"></i><span>Real-time Alerts</span></a>
+<div class="nav-section">Investigation</div>
+<a href="evidence.html" class="nav-link" data-nav="evidence.html"><i class="fa-solid fa-fingerprint"></i><span>Evidence</span></a>
+<a href="ai-analysis.html" class="nav-link" data-nav="ai-analysis.html"><i class="fa-solid fa-brain"></i><span>AI Analysis</span></a>
+<a href="logs.html" class="nav-link" data-nav="logs.html"><i class="fa-solid fa-clipboard-list"></i><span>Logs</span></a>
+<a href="ints-tracking.html" class="nav-link" data-nav="ints-tracking.html"><i class="fa-solid fa-route"></i><span>INTS Tracking</span></a>
+<div class="nav-section">Operations</div>
+<a href="network-topology.html" class="nav-link" data-nav="network-topology.html"><i class="fa-solid fa-diagram-project"></i><span>Cyber Range</span></a>
+<a href="network-devices.html" class="nav-link" data-nav="network-devices.html"><i class="fa-solid fa-network-wired"></i><span>Network Devices</span></a>
+<a href="network-traffic.html" class="nav-link" data-nav="network-traffic.html"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>Live Network Traffic</span></a>
+<a href="reports.html" class="nav-link" data-nav="reports.html"><i class="fa-solid fa-file-lines"></i><span>Reports</span></a>
+<div class="nav-section">Administration</div>
+<a href="users.html" class="nav-link" data-nav="users.html"><i class="fa-solid fa-users"></i><span>Users</span></a>
+<a href="roles-permissions.html" class="nav-link" data-nav="roles-permissions.html"><i class="fa-solid fa-user-shield"></i><span>Roles & Permissions</span></a>
+<a href="settings.html" class="nav-link" data-nav="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+</nav><div class="sidebar-footer"><div class="operator-card"><div class="avatar">AU</div><div><strong>Authenticated User</strong><small>Administrator</small></div></div></div>
+</aside>
+<div class="app-shell">
+<header class="topbar"><button class="icon-button mobile-menu" data-toggle-sidebar><i class="fa-solid fa-bars"></i></button><div class="topbar-context"><span class="status-dot online"></span><span>Integrated local cyber lab</span></div><div class="topbar-actions"><a class="role-pill" href="user-profile.html"><i class="fa-solid fa-id-badge"></i> User Role</a><button class="icon-button" onclick="location.href='alerts.html'"><i class="fa-regular fa-bell"></i><span class="notification-badge">0</span></button><button class="logout-button" onclick="NESS.logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button></div></header>
+<main class="page">
+<section class="page-header"><div><div class="breadcrumb">NESS Platform / Operations / Cyber Range</div><h1>Live Network Topology</h1><p class="page-lead">Packet-Tracer-style view of the integrated NESS training network. Devices, switches, routes, services, traffic, incidents, and alerts are tied directly to the running lab.</p></div><div class="page-header-actions"><button id="labStartBtn" class="button button-primary"><i class="fa-solid fa-play"></i> Start Lab</button><button id="labStopBtn" class="button button-secondary"><i class="fa-solid fa-stop"></i> Stop</button><button id="labResetBtn" class="button button-secondary"><i class="fa-solid fa-rotate"></i> Reset</button></div></section>
+<div class="grid grid-4" style="margin-bottom:18px">
+<div class="card metric-card"><div><div class="metric-label">Cyber Range</div><div class="metric-value" id="labState" style="font-size:20px">Loading</div><div class="metric-note" id="labMode">Integrated lab</div></div><div class="metric-icon icon-primary"><i class="fa-solid fa-diagram-project"></i></div></div>
+<div class="card metric-card"><div><div class="metric-label">Gateway Sensor</div><div class="metric-value" id="labSensorState" style="font-size:20px">Loading</div><div class="metric-note" id="labLastPacket">No packet yet</div></div><div class="metric-icon icon-primary"><i class="fa-solid fa-shield-halved"></i></div></div>
+<div class="card metric-card"><div><div class="metric-label">Online Devices</div><div class="metric-value" id="labDevicesOnline">0</div><div class="metric-note">Integrated virtual devices</div></div><div class="metric-icon icon-success"><i class="fa-solid fa-computer"></i></div></div>
+<div class="card metric-card"><div><div class="metric-label">Isolation</div><div class="metric-value" style="font-size:20px">Local Only</div><div class="metric-note">No VM / WSL / Docker</div></div><div class="metric-icon icon-success"><i class="fa-solid fa-lock"></i></div></div>
+</div>
+
+<div class="grid grid-main topology-grid">
+<section class="panel topology-panel"><div class="panel-header"><div><div class="panel-title">NESS Cyber Range</div><div class="panel-subtitle">Green links are active. Packet pulses come from real local service I/O and logical NESS network events.</div></div><div class="topology-legend"><span><i class="legend-dot online"></i> Online</span><span><i class="legend-dot threat"></i> Threat</span><span><i class="legend-dot packet"></i> Packet</span></div></div><div class="topology-canvas-wrap"><svg id="labTopologySvg" class="topology-canvas" viewBox="0 0 1180 500" role="img" aria-label="NESS live cyber range topology"><defs><pattern id="topologyGrid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" class="topology-grid-line"/></pattern><filter id="nodeGlow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="1180" height="500" fill="url(#topologyGrid)"/><g id="labTopologyLinks"></g><g id="labTopologyNodes"></g><g id="labPacketLayer"></g></svg></div><div class="panel-body topology-footer"><span id="labBackendText">Checking integrated lab backend...</span><span id="labTrafficCounter">0 packets captured</span></div></section>
+<aside class="panel"><div class="panel-header"><div><div class="panel-title">Device Inspector</div><div class="panel-subtitle">Select a node in the topology</div></div></div><div class="panel-body" id="labNodeInspector"><div class="empty-illustration"><i class="fa-solid fa-arrow-pointer"></i><p>Click any device, switch, or the NESS gateway.</p></div></div></aside>
+</div>
+<section class="panel" style="margin-top:18px"><div class="panel-header"><div><div class="panel-title">Live Packet & Service Console</div><div class="panel-subtitle">WebSocket stream generated from integrated lab traffic and service events</div></div><button class="button button-secondary button-small" onclick="document.getElementById('labLiveEvents').innerHTML=''">Clear</button></div><div class="panel-body"><div id="labLiveEvents" class="lab-live-events"><div class="lab-event-empty">Waiting for integrated cyber-lab traffic...</div></div></div></section>
+<section class="panel" style="margin-top:18px"><div class="panel-header"><div><div class="panel-title">Live NESS Integration</div><div class="panel-subtitle">These values are read from the same SQLite records used by Dashboard, Incidents, Alerts, Evidence, AI Analysis, Logs and INTS.</div></div></div><div class="panel-body"><div class="grid grid-4"><div class="card"><div class="metric-label">Incidents</div><div class="metric-value" id="labTotalIncidents">0</div></div><div class="card"><div class="metric-label">Alerts</div><div class="metric-value" id="labTotalAlerts">0</div></div><div class="card"><div class="metric-label">Evidence</div><div class="metric-value" id="labTotalEvidence">0</div></div><div class="card"><div class="metric-label">AI Analysis</div><div class="metric-value" id="labTotalAI">0</div></div><div class="card"><div class="metric-label">INTS Tracking</div><div class="metric-value" id="labTotalINTS">0</div></div><div class="card"><div class="metric-label">Logs</div><div class="metric-value" id="labTotalLogs">0</div></div><div class="card"><div class="metric-label">Network Flows</div><div class="metric-value" id="labTotalFlows">0</div></div><div class="card"><div class="metric-label">Scenario Runs</div><div class="metric-value" id="labTotalRuns">0</div></div></div><p style="color:var(--muted);margin:12px 0 0">Normal scenarios update traffic, devices and logs. Security scenarios additionally create incidents, evidence, alerts, INTS events and automatic AI analysis.</p></div></section>
+<section class="panel" style="margin-top:18px"><div class="panel-header"><div><div class="panel-title">Integrated Lab Scenarios</div><div class="panel-subtitle">Every action below stays inside the local NESS training lab. No external target is accepted.</div></div></div><div class="panel-body"><div class="scenario-grid" id="labScenarioGrid"></div><div id="labScenarioResult" class="scenario-result">Choose a scenario after the lab is running.</div></div></section>
+<section class="panel" style="margin-top:18px"><div class="panel-header"><div><div class="panel-title">Scenario History</div><div class="panel-subtitle">Recorded execution history from the NESS database</div></div><button class="button button-secondary button-small" onclick="NESS_LAB.refreshAll()">Refresh</button></div><div class="table-wrap"><table class="table"><thead><tr><th>Time</th><th>Scenario</th><th>Category</th><th>Source</th><th>Target</th><th>Status</th><th>Incident</th><th>Result</th></tr></thead><tbody id="labScenarioHistory"></tbody></table></div></section>
+</main></div>
+<div id="toast-container" class="toast-container"></div><div class="sidebar-backdrop" data-toggle-sidebar></div>
+<script src="assets/js/data-renderers.js"></script><script src="assets/js/i18n.js"></script><script src="assets/js/main.js"></script><script src="assets/js/api-client.js"></script><script src="assets/js/lab-topology.js"></script>
+</body></html>

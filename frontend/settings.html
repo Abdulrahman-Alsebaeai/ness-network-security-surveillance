@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="assets/js/language-bootstrap.js"></script>
+<link rel="stylesheet" href="assets/vendor/fonts/fonts.css">
+<link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+
+<title>NESS | Settings</title>
+</head>
+<body class="app-body " data-page="settings.html">
+    <aside class="sidebar" id="sidebar">
+        <a class="brand" href="dashboard.html" aria-label="NESS Dashboard">
+            <span class="brand-mark"><i class="fa-solid fa-shield-halved"></i></span>
+            <span class="brand-text"><strong>NESS</strong><small>Network Security & Surveillance</small></span>
+        </a>
+        <nav class="sidebar-nav">
+            <div class="nav-section">Command</div>
+<a href="dashboard.html" class="nav-link" data-nav="dashboard.html"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+<a href="incidents.html" class="nav-link" data-nav="incidents.html"><i class="fa-solid fa-triangle-exclamation"></i><span>Incidents</span></a>
+<a href="alerts.html" class="nav-link" data-nav="alerts.html"><i class="fa-solid fa-bell"></i><span>Real-time Alerts</span></a>
+<div class="nav-section">Investigation</div>
+<a href="evidence.html" class="nav-link" data-nav="evidence.html"><i class="fa-solid fa-fingerprint"></i><span>Evidence</span></a>
+<a href="ai-analysis.html" class="nav-link" data-nav="ai-analysis.html"><i class="fa-solid fa-brain"></i><span>AI Analysis</span></a>
+<a href="logs.html" class="nav-link" data-nav="logs.html"><i class="fa-solid fa-clipboard-list"></i><span>Logs</span></a>
+<a href="ints-tracking.html" class="nav-link" data-nav="ints-tracking.html"><i class="fa-solid fa-route"></i><span>INTS Tracking</span></a>
+<div class="nav-section">Operations</div>
+<a href="network-topology.html" class="nav-link" data-nav="network-topology.html"><i class="fa-solid fa-diagram-project"></i><span>Cyber Range</span></a>
+<a href="network-devices.html" class="nav-link" data-nav="network-devices.html"><i class="fa-solid fa-network-wired"></i><span>Network Devices</span></a>
+<a href="network-traffic.html" class="nav-link" data-nav="network-traffic.html"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>Live Network Traffic</span></a>
+<a href="reports.html" class="nav-link" data-nav="reports.html"><i class="fa-solid fa-file-lines"></i><span>Reports</span></a>
+<div class="nav-section">Administration</div>
+<a href="users.html" class="nav-link" data-nav="users.html"><i class="fa-solid fa-users"></i><span>Users</span></a>
+<a href="roles-permissions.html" class="nav-link" data-nav="roles-permissions.html"><i class="fa-solid fa-user-shield"></i><span>Roles & Permissions</span></a>
+<a href="settings.html" class="nav-link" data-nav="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="operator-card">
+                <div class="avatar">AU</div>
+                <div>
+                    <strong>Authenticated User</strong>
+                    <small>Administrator</small>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="app-shell">
+        <header class="topbar">
+            <button class="icon-button mobile-menu" data-toggle-sidebar aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+            <div class="topbar-context">
+                <span class="status-dot online"></span>
+                <span>Monitoring online</span>
+            </div>
+            <div class="topbar-actions">
+                <a class="role-pill" href="user-profile.html"><i class="fa-solid fa-id-badge"></i> User Role</a>
+                <button class="icon-button" data-toast="Notifications opened" onclick="location.href='alerts.html'" aria-label="Notifications"><i class="fa-regular fa-bell"></i><span class="notification-badge">0</span></button>
+                <button class="icon-button" data-toast="Secure lock screen opened" onclick="location.href='lock-screen.html'" aria-label="Lock"><i class="fa-solid fa-lock"></i></button>
+                <button class="logout-button" onclick="NESS.logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button>
+            </div>
+        </header>
+        <main class="page">
+            <section class="page-header">
+                <div>
+                    <div class="breadcrumb">NESS Platform / Settings</div>
+                    <h1>System Settings</h1>
+                </div>
+                <div class="page-header-actions">
+                    <button class="button button-secondary" onclick="NESS.refreshPage()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                </div>
+            </section>
+            <div class="grid grid-2"><section class="panel"><div class="panel-header"><div class="panel-title">General Settings</div></div><div class="panel-body"><div class="field"><label>System Name</label><input class="input" value="NESS — Network Security & Surveillance System"></div><div class="field"><label>Interface Language</label><select class="select" id="interfaceLanguageSettings" data-language-select><option value="en">English</option><option value="ar">Arabic</option></select></div><div class="field"><label>Default Role</label><select class="select"><option value="Security Analyst">Security Analyst</option><option value="Security Operator">Security Operator</option></select></div></div></section><section class="panel"><div class="panel-header"><div class="panel-title">Monitoring Settings</div></div><div class="panel-body"><div class="field"><label>Live Transport</label><input class="input" value="WebSocket" readonly></div><label><input type="checkbox" checked> Enable security monitoring engine</label></div></section><section class="panel"><div class="panel-header"><div class="panel-title">Detection Rules</div></div><div class="panel-body"><label class="health-row"><span>SQL Injection safe pattern detection</span><input type="checkbox" checked></label><label class="health-row"><span>XSS attempt detection</span><input type="checkbox" checked></label><label class="health-row"><span>Directory Traversal request detection</span><input type="checkbox" checked></label><label class="health-row"><span>High request-rate / brute-force threshold</span><input type="checkbox" checked></label></div></section><section class="panel"><div class="panel-header"><div class="panel-title">Telegram Bot Settings</div></div><div class="panel-body"><div class="field"><label>Bot Token</label><input class="input" type="password" placeholder="Telegram bot token"></div><div class="field"><label>SOC Chat ID</label><input class="input" placeholder="SOC chat ID"></div></div></section><section class="panel"><div class="panel-header"><div class="panel-title">Arduino Settings</div></div><div class="panel-body"><div class="field"><label>Port / Endpoint</label><input class="input" placeholder="AUTO or COM4" value="AUTO"></div><div class="field"><label>Alarm Policy</label><select class="select"><option value="High and Critical">High and Critical</option><option value="Critical only">Critical only</option><option value="All alerts">All alerts</option></select></div><div class="health-row"><span>Arduino Connection</span><span id="arduinoConnectionBadge" class="badge badge-warning">Checking...</span></div><button class="button button-secondary button-small" type="button" data-action="test-arduino"><i class="fa-solid fa-bell"></i> Test Physical Alarm</button></div></section><section class="panel"><div class="panel-header"><div class="panel-title">AI Model Settings</div></div><div class="panel-body"><div class="field"><label>Model Name</label><input class="input" value="NESS-AI Incident Classifier"></div><div class="field"><label>Confidence Threshold</label><input class="input" value="85%"></div></div></section><section class="panel"><div class="panel-header"><div class="panel-title">Report Settings</div></div><div class="panel-body"><label><input type="checkbox" checked> Include evidence chain-of-custody</label><br><label><input type="checkbox" checked> Include AI recommendations</label></div></section><section class="panel"><div class="panel-header"><div class="panel-title">Notification Settings</div></div><div class="panel-body"><label><input type="checkbox" checked> Send Telegram alerts</label><br><label><input type="checkbox" checked> Trigger Arduino for critical alerts</label><br><button class="button button-primary" style="margin-top:16px" data-action="save-settings"><i class="fa-solid fa-save"></i> Save All Settings</button></div></section><section class="panel"><div class="panel-header"><div><div class="panel-title">Real-Time Automation</div><div class="panel-subtitle">All automatic services are enabled by default</div></div></div><div class="panel-body"><label class="health-row"><span>Inspect all NESS HTTP requests</span><input id="monitorAllHttpRequests" type="checkbox" checked></label><label class="health-row"><span>Automatic AI classification & prediction</span><input id="autoAiEnabled" type="checkbox" checked></label><label class="health-row"><span>Automatic security log analysis</span><input id="autoLogAnalysisEnabled" type="checkbox" checked></label><div class="field"><label>Log Analysis Interval (seconds)</label><input id="autoLogInterval" class="input" type="number" min="15" max="3600" value="60"></div></div></section><section class="panel"><div class="panel-header"><div><div class="panel-title">Integrated Cyber Lab</div><div class="panel-subtitle">Runs directly with NESS on Windows/Python — no WSL, VMware, VirtualBox, Docker, Npcap, or administrator setup</div></div></div><div class="panel-body"><label class="health-row"><span>Enable integrated cyber lab</span><input id="labEnabled" type="checkbox" checked></label><label class="health-row"><span>Start lab automatically with NESS</span><input id="labAutoStart" type="checkbox" checked></label><div class="field"><label>Flow Retention (hours)</label><input id="networkRetentionHours" class="input" type="number" min="1" max="720" value="24"></div><div class="grid grid-3"><div class="card"><div class="metric-label">Users</div><strong>10.10.10.0/24</strong></div><div class="card"><div class="metric-label">DMZ</div><strong>10.10.20.0/24</strong></div><div class="card"><div class="metric-label">Data</div><strong>10.10.30.0/24</strong></div></div><p style="color:var(--muted);margin:14px 0 0">The lab starts from <code>run_windows.bat</code>. Its Web and Database services use real local sockets, while NESS maintains the complete logical topology, traffic, detections, incidents, evidence and live visualization.</p></div></section></div>
+        </main>
+    </div>
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+    <div class="sidebar-backdrop" data-toggle-sidebar></div>
+<script src="assets/js/data-renderers.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/api-client.js"></script>
+
+</body>
+</html>

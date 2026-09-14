@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="assets/js/language-bootstrap.js"></script>
+<link rel="stylesheet" href="assets/vendor/fonts/fonts.css">
+<link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+
+<title>NESS | Logs</title>
+</head>
+<body class="app-body " data-page="logs.html">
+    <aside class="sidebar" id="sidebar">
+        <a class="brand" href="dashboard.html" aria-label="NESS Dashboard">
+            <span class="brand-mark"><i class="fa-solid fa-shield-halved"></i></span>
+            <span class="brand-text"><strong>NESS</strong><small>Network Security & Surveillance</small></span>
+        </a>
+        <nav class="sidebar-nav">
+            <div class="nav-section">Command</div>
+<a href="dashboard.html" class="nav-link" data-nav="dashboard.html"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+<a href="incidents.html" class="nav-link" data-nav="incidents.html"><i class="fa-solid fa-triangle-exclamation"></i><span>Incidents</span></a>
+<a href="alerts.html" class="nav-link" data-nav="alerts.html"><i class="fa-solid fa-bell"></i><span>Real-time Alerts</span></a>
+<div class="nav-section">Investigation</div>
+<a href="evidence.html" class="nav-link" data-nav="evidence.html"><i class="fa-solid fa-fingerprint"></i><span>Evidence</span></a>
+<a href="ai-analysis.html" class="nav-link" data-nav="ai-analysis.html"><i class="fa-solid fa-brain"></i><span>AI Analysis</span></a>
+<a href="logs.html" class="nav-link" data-nav="logs.html"><i class="fa-solid fa-clipboard-list"></i><span>Logs</span></a>
+<a href="ints-tracking.html" class="nav-link" data-nav="ints-tracking.html"><i class="fa-solid fa-route"></i><span>INTS Tracking</span></a>
+<div class="nav-section">Operations</div>
+<a href="network-topology.html" class="nav-link" data-nav="network-topology.html"><i class="fa-solid fa-diagram-project"></i><span>Cyber Range</span></a>
+<a href="network-devices.html" class="nav-link" data-nav="network-devices.html"><i class="fa-solid fa-network-wired"></i><span>Network Devices</span></a>
+<a href="network-traffic.html" class="nav-link" data-nav="network-traffic.html"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>Live Network Traffic</span></a>
+<a href="reports.html" class="nav-link" data-nav="reports.html"><i class="fa-solid fa-file-lines"></i><span>Reports</span></a>
+<div class="nav-section">Administration</div>
+<a href="users.html" class="nav-link" data-nav="users.html"><i class="fa-solid fa-users"></i><span>Users</span></a>
+<a href="roles-permissions.html" class="nav-link" data-nav="roles-permissions.html"><i class="fa-solid fa-user-shield"></i><span>Roles & Permissions</span></a>
+<a href="settings.html" class="nav-link" data-nav="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="operator-card">
+                <div class="avatar">AU</div>
+                <div>
+                    <strong>Authenticated User</strong>
+                    <small>Administrator</small>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="app-shell">
+        <header class="topbar">
+            <button class="icon-button mobile-menu" data-toggle-sidebar aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+            <div class="topbar-context">
+                <span class="status-dot online"></span>
+                <span>Monitoring online</span>
+            </div>
+            <div class="topbar-actions">
+                <a class="role-pill" href="user-profile.html"><i class="fa-solid fa-id-badge"></i> User Role</a>
+                <button class="icon-button" data-toast="Notifications opened" onclick="location.href='alerts.html'" aria-label="Notifications"><i class="fa-regular fa-bell"></i><span class="notification-badge">0</span></button>
+                <button class="icon-button" data-toast="Secure lock screen opened" onclick="location.href='lock-screen.html'" aria-label="Lock"><i class="fa-solid fa-lock"></i></button>
+                <button class="logout-button" onclick="NESS.logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button>
+            </div>
+        </header>
+        <main class="page">
+            <section class="page-header"><div><div class="breadcrumb">NESS Platform / Investigation / Logs</div><h1>Security Logs & Analysis</h1></div><button class="button button-secondary" onclick="NESS.refreshPage()"><i class="fa-solid fa-rotate"></i> Refresh</button></section>
+            <div class="grid grid-main" style="margin-bottom:18px">
+              <section class="panel"><div class="panel-header"><div><div class="panel-title">Security Log Analysis</div><div class="panel-subtitle">Analyze the actual system_logs records stored by NESS</div></div></div><div class="panel-body"><div class="grid grid-3"><div class="field"><label>Time Window</label><select id="logAnalysisHours" class="select"><option value="1">Last 1 hour</option><option value="6">Last 6 hours</option><option value="24" selected>Last 24 hours</option><option value="168">Last 7 days</option><option value="720">Last 30 days</option></select></div><div class="field"><label>Category</label><select id="logAnalysisCategory" class="select"><option value="">All categories</option><option value="Security">Security</option><option value="Audit">Audit</option><option value="AI">AI</option><option value="System">System</option><option value="Report">Report</option></select></div><div class="field"><label>Level</label><select id="logAnalysisLevel" class="select"><option value="">All levels</option><option value="Critical">Critical</option><option value="High">High</option><option value="Error">Error</option><option value="Warning">Warning</option><option value="Info">Info</option></select></div></div><button class="button button-primary" id="runLogAnalysis" onclick="NESS_API.runLogAnalysis()"><i class="fa-solid fa-magnifying-glass-chart"></i> Analyze Security Logs</button><div id="logAnalysisResult" style="margin-top:16px"></div></div></section>
+              <aside class="panel"><div class="panel-header"><div class="panel-title">Saved Analyses</div></div><div class="panel-body" id="logAnalysisHistory"><p style="color:var(--muted)">No saved analysis loaded yet.</p></div></aside>
+            </div>
+            <section class="panel"><div class="panel-header"><div><div class="panel-title">System Log Records</div><div class="panel-subtitle">Actual audit, security, system, AI and report events</div></div></div><div class="table-wrap"><table class="table" id="logsTable"><thead><tr><th>Time</th><th>Category</th><th>Actor</th><th>Message</th><th>Level</th></tr></thead><tbody></tbody></table></div></section>
+        </main>
+    </div>
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+    <div class="sidebar-backdrop" data-toggle-sidebar></div>
+<script src="assets/js/data-renderers.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/api-client.js"></script>
+
+</body>
+</html>

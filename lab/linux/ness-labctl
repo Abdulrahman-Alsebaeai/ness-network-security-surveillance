@@ -1,0 +1,214 @@
+#!/usr/bin/env bash
+set -euo pipefail
+STATE_DIR=/var/lib/ness-lab
+RUN_DIR=/run/ness-lab
+OPT_DIR=/opt/ness-lab
+EVENTS="$STATE_DIR/events.jsonl"
+mkdir -p "$STATE_DIR" "$RUN_DIR"
+chmod 755 "$STATE_DIR" "$RUN_DIR"
+
+NS_CLIENT=ness_client
+NS_ATTACK=ness_attacker
+NS_WEB=ness_web
+NS_DB=ness_db
+NS_GW=ness_gateway
+BR_USERS=ness_br_users
+BR_DMZ=ness_br_dmz
+BR_DATA=ness_br_data
+
+jesc(){ python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))'; }
+ns_exists(){ ip netns list | awk '{print $1}' | grep -qx "$1"; }
+link_exists(){ ip link show "$1" >/dev/null 2>&1; }
+
+stop_pid(){ local f="$1"; if [[ -f "$f" ]]; then local p; p=$(cat "$f" 2>/dev/null || true); if [[ -n "${p:-}" ]]; then kill "$p" >/dev/null 2>&1 || true; sleep 0.15; kill -9 "$p" >/dev/null 2>&1 || true; fi; rm -f "$f"; fi; }
+
+stop_lab(){
+  stop_pid "$RUN_DIR/sensor.pid"; stop_pid "$RUN_DIR/web.pid"; stop_pid "$RUN_DIR/db.pid"
+  for ns in "$NS_CLIENT" "$NS_ATTACK" "$NS_WEB" "$NS_DB" "$NS_GW"; do ip netns del "$ns" >/dev/null 2>&1 || true; done
+  for br in "$BR_USERS" "$BR_DMZ" "$BR_DATA"; do ip link del "$br" >/dev/null 2>&1 || true; done
+}
+
+mkbridge(){ local br="$1"; if ! link_exists "$br"; then ip link add "$br" type bridge; fi; ip link set "$br" up; }
+
+mkns(){ local ns="$1"; if ! ns_exists "$ns"; then ip netns add "$ns"; fi; ip -n "$ns" link set lo up; }
+
+attach_host(){
+  local ns="$1" hostif="$2" nsif="$3" br="$4" ipcidr="$5" mac="$6" gw="$7"
+  ip link del "$hostif" >/dev/null 2>&1 || true
+  ip link add "$hostif" type veth peer name "$nsif"
+  ip link set "$hostif" master "$br"; ip link set "$hostif" up
+  ip link set "$nsif" netns "$ns"
+  ip -n "$ns" link set "$nsif" address "$mac"
+  ip -n "$ns" addr flush dev "$nsif" || true
+  ip -n "$ns" addr add "$ipcidr" dev "$nsif"
+  ip -n "$ns" link set "$nsif" up
+  ip -n "$ns" route replace default via "$gw"
+}
+
+attach_gateway(){
+  local hostif="$1" gwif="$2" br="$3" ipcidr="$4" mac="$5"
+  ip link del "$hostif" >/dev/null 2>&1 || true
+  ip link add "$hostif" type veth peer name "$gwif"
+  ip link set "$hostif" master "$br"; ip link set "$hostif" up
+  ip link set "$gwif" netns "$NS_GW"
+  ip -n "$NS_GW" link set "$gwif" address "$mac"
+  ip -n "$NS_GW" addr flush dev "$gwif" || true
+  ip -n "$NS_GW" addr add "$ipcidr" dev "$gwif"
+  ip -n "$NS_GW" link set "$gwif" up
+}
+
+start_services(){
+  : > "$EVENTS"
+  rm -f "$STATE_DIR/messages.jsonl"
+  mkdir -p "$STATE_DIR/webroot/files"
+  # Separate real services inside their network namespaces.
+  ip netns exec "$NS_DB" nohup python3 "$OPT_DIR/ness_lab_db.py" --bind 10.10.30.30 --port 5432 --events "$EVENTS" --messages "$STATE_DIR/messages.jsonl" >"$STATE_DIR/db.log" 2>&1 & echo $! > "$RUN_DIR/db.pid"
+  sleep 0.25
+  ip netns exec "$NS_WEB" nohup python3 "$OPT_DIR/ness_lab_web.py" --bind 10.10.20.20 --port 8080 >"$STATE_DIR/web.log" 2>&1 & echo $! > "$RUN_DIR/web.pid"
+  sleep 0.25
+  ip netns exec "$NS_GW" nohup python3 "$OPT_DIR/ness_lab_sensor.py" --events "$EVENTS" \
+      --interface gw_users=10.10.10.0/24 --interface gw_dmz=10.10.20.0/24 --interface gw_data=10.10.30.0/24 >"$STATE_DIR/sensor.log" 2>&1 & echo $! > "$RUN_DIR/sensor.pid"
+  sleep 0.35
+}
+
+start_lab(){
+  stop_lab
+  mkbridge "$BR_USERS"; mkbridge "$BR_DMZ"; mkbridge "$BR_DATA"
+  mkns "$NS_CLIENT"; mkns "$NS_ATTACK"; mkns "$NS_WEB"; mkns "$NS_DB"; mkns "$NS_GW"
+  attach_host "$NS_CLIENT" v_client client0 "$BR_USERS" 10.10.10.11/24 02:42:0a:0a:0a:0b 10.10.10.1
+  attach_host "$NS_ATTACK" v_attack attack0 "$BR_USERS" 10.10.10.40/24 02:42:0a:0a:0a:28 10.10.10.1
+  attach_host "$NS_WEB" v_web web0 "$BR_DMZ" 10.10.20.20/24 02:42:0a:0a:14:14 10.10.20.1
+  attach_host "$NS_DB" v_db db0 "$BR_DATA" 10.10.30.30/24 02:42:0a:0a:1e:1e 10.10.30.1
+  attach_gateway v_gwu gw_users "$BR_USERS" 10.10.10.1/24 02:42:0a:0a:0a:01
+  attach_gateway v_gwd gw_dmz "$BR_DMZ" 10.10.20.1/24 02:42:0a:0a:14:01
+  attach_gateway v_gwb gw_data "$BR_DATA" 10.10.30.1/24 02:42:0a:0a:1e:01
+  ip netns exec "$NS_GW" sysctl -q -w net.ipv4.ip_forward=1
+  # The cyber range is intentionally isolated. No NAT/default route to the Internet is created.
+  start_services
+}
+
+pid_alive(){ local f="$1"; [[ -f "$f" ]] && kill -0 "$(cat "$f")" >/dev/null 2>&1; }
+
+status_json(){
+  local running=false sensor=false web=false db=false
+  if ns_exists "$NS_GW" && ns_exists "$NS_CLIENT" && ns_exists "$NS_ATTACK" && ns_exists "$NS_WEB" && ns_exists "$NS_DB"; then running=true; fi
+  pid_alive "$RUN_DIR/sensor.pid" && sensor=true || true
+  pid_alive "$RUN_DIR/web.pid" && web=true || true
+  pid_alive "$RUN_DIR/db.pid" && db=true || true
+  printf '{"ok":true,"installed":true,"running":%s,"sensorRunning":%s,"webRunning":%s,"dbRunning":%s,"mode":"WSL2 Linux Network Namespaces","internetAccess":false,"usersCidr":"10.10.10.0/24","dmzCidr":"10.10.20.0/24","dataCidr":"10.10.30.0/24"}\n' "$running" "$sensor" "$web" "$db"
+}
+
+devices_json(){
+  local state=Offline
+  ns_exists "$NS_CLIENT" && state=Online
+  cat <<JSON
+{"ok":true,"devices":[
+{"id":"client","name":"Client-PC","hostname":"client.ness.lab","role":"Client","type":"Workstation","namespace":"$NS_CLIENT","ip":"10.10.10.11","mac":"02:42:0a:0a:0a:0b","network":"10.10.10.0/24","status":"$state","services":[]},
+{"id":"attacker","name":"Security-Test","hostname":"test.ness.lab","role":"Security Test","type":"Testing Host","namespace":"$NS_ATTACK","ip":"10.10.10.40","mac":"02:42:0a:0a:0a:28","network":"10.10.10.0/24","status":"$(ns_exists "$NS_ATTACK" && echo Online || echo Offline)","services":[]},
+{"id":"gateway","name":"NESS-Gateway-Sensor","hostname":"gateway.ness.lab","role":"Gateway / IDS Sensor","type":"Security Gateway","namespace":"$NS_GW","ip":"10.10.10.1","addresses":["10.10.10.1","10.10.20.1","10.10.30.1"],"mac":"02:42:0a:0a:0a:01","network":"All Lab Segments","status":"$(ns_exists "$NS_GW" && echo Online || echo Offline)","services":["Packet Sensor","IPv4 Routing"]},
+{"id":"web","name":"Web-Server","hostname":"web.ness.lab","role":"DMZ Web Server","type":"Server","namespace":"$NS_WEB","ip":"10.10.20.20","mac":"02:42:0a:0a:14:14","network":"10.10.20.0/24","status":"$(ns_exists "$NS_WEB" && echo Online || echo Offline)","services":["HTTP :8080","Vulnerable Training App"]},
+{"id":"db","name":"Database-Server","hostname":"db.ness.lab","role":"Data Service","type":"Server","namespace":"$NS_DB","ip":"10.10.30.30","mac":"02:42:0a:0a:1e:1e","network":"10.10.30.0/24","status":"$(ns_exists "$NS_DB" && echo Online || echo Offline)","services":["NESS DB Protocol :5432"]}
+]}
+JSON
+}
+
+topology_json(){
+  local running=false; ns_exists "$NS_GW" && running=true
+  cat <<JSON
+{"ok":true,"running":$running,"nodes":[
+{"id":"client","label":"Client-PC","kind":"pc","ip":"10.10.10.11","x":90,"y":130,"status":"$(ns_exists "$NS_CLIENT" && echo Online || echo Offline)"},
+{"id":"attacker","label":"Security-Test","kind":"attacker","ip":"10.10.10.40","x":90,"y":360,"status":"$(ns_exists "$NS_ATTACK" && echo Online || echo Offline)"},
+{"id":"sw-users","label":"Users Switch","kind":"switch","ip":"10.10.10.0/24","x":315,"y":245,"status":"$(link_exists "$BR_USERS" && echo Online || echo Offline)"},
+{"id":"gateway","label":"NESS Gateway / Sensor","kind":"shield","ip":"10.10.10.1 | 10.10.20.1 | 10.10.30.1","x":570,"y":245,"status":"$(ns_exists "$NS_GW" && echo Online || echo Offline)"},
+{"id":"sw-dmz","label":"DMZ Switch","kind":"switch","ip":"10.10.20.0/24","x":820,"y":125,"status":"$(link_exists "$BR_DMZ" && echo Online || echo Offline)"},
+{"id":"web","label":"Web Server","kind":"server","ip":"10.10.20.20:8080","x":1060,"y":125,"status":"$(ns_exists "$NS_WEB" && echo Online || echo Offline)"},
+{"id":"sw-data","label":"Data Switch","kind":"switch","ip":"10.10.30.0/24","x":820,"y":365,"status":"$(link_exists "$BR_DATA" && echo Online || echo Offline)"},
+{"id":"db","label":"Database Server","kind":"database","ip":"10.10.30.30:5432","x":1060,"y":365,"status":"$(ns_exists "$NS_DB" && echo Online || echo Offline)"}
+],"links":[
+{"source":"client","target":"sw-users","label":"veth / L2"},{"source":"attacker","target":"sw-users","label":"veth / L2"},{"source":"sw-users","target":"gateway","label":"10.10.10.0/24"},{"source":"gateway","target":"sw-dmz","label":"10.10.20.0/24"},{"source":"sw-dmz","target":"web","label":"HTTP"},{"source":"gateway","target":"sw-data","label":"10.10.30.0/24"},{"source":"sw-data","target":"db","label":"DB TCP"}
+]}
+JSON
+}
+
+scenario(){
+  local key="${1:-}"; local out=""; local code=0
+  if ! ns_exists "$NS_GW"; then echo '{"ok":false,"error":"Cyber range is not running"}'; exit 2; fi
+  case "$key" in
+    ping_web)
+      out=$(ip netns exec "$NS_CLIENT" ping -c 4 -W 1 10.10.20.20 2>&1) || code=$?
+      ;;
+    normal_http)
+      out=$(ip netns exec "$NS_CLIENT" python3 -c "import urllib.request; print(urllib.request.urlopen('http://10.10.20.20:8080/api/health',timeout=4).read().decode())" 2>&1) || code=$?
+      ;;
+    send_message)
+      out=$(ip netns exec "$NS_CLIENT" python3 -c "import json,urllib.request; d=json.dumps({'message':'Hello from the real NESS client namespace'}).encode(); r=urllib.request.Request('http://10.10.20.20:8080/api/messages',data=d,headers={'Content-Type':'application/json'},method='POST'); print(urllib.request.urlopen(r,timeout=4).read().decode())" 2>&1) || code=$?
+      ;;
+    sql_injection)
+      out=$(ip netns exec "$NS_ATTACK" python3 -c "import urllib.parse,urllib.request; d=urllib.parse.urlencode({'username':\"admin' OR '1'='1' --\",'password':'x'}).encode(); r=urllib.request.Request('http://10.10.20.20:8080/login',data=d,method='POST'); print(urllib.request.urlopen(r,timeout=4).read().decode())" 2>&1) || code=$?
+      ;;
+    xss)
+      out=$(ip netns exec "$NS_ATTACK" python3 -c "import urllib.parse,urllib.request; q=urllib.parse.quote('<script>alert(1)</script>'); print(urllib.request.urlopen('http://10.10.20.20:8080/echo?q='+q,timeout=4).read().decode())" 2>&1) || code=$?
+      ;;
+    traversal)
+      out=$(ip netns exec "$NS_ATTACK" python3 -c "import urllib.parse,urllib.request; q=urllib.parse.quote('../secret.txt'); print(urllib.request.urlopen('http://10.10.20.20:8080/files?name='+q,timeout=4).read().decode())" 2>&1) || code=$?
+      ;;
+    port_scan)
+      out=$(ip netns exec "$NS_ATTACK" python3 -c "import socket; ports=[20,21,22,23,25,53,80,110,143,443,445,3389,5432,8000,8080,8443]; rs=[]
+for p in ports:
+ s=socket.socket();s.settimeout(.12);r=s.connect_ex(('10.10.20.20',p));rs.append((p,r));s.close()
+print(rs)" 2>&1) || code=$?
+      ;;
+    auth_burst)
+      out=$(ip netns exec "$NS_ATTACK" python3 -c "import urllib.parse,urllib.request
+for i in range(9):
+ d=urllib.parse.urlencode({'username':'admin','password':'bad-'+str(i)}).encode(); r=urllib.request.Request('http://10.10.20.20:8080/login',data=d,method='POST')
+ try: urllib.request.urlopen(r,timeout=2).read()
+ except Exception: pass
+print('9 authentication attempts sent')" 2>&1) || code=$?
+      ;;
+    icmp_burst)
+      out=$(ip netns exec "$NS_ATTACK" ping -c 45 -i 0.03 -W 1 10.10.20.20 2>&1) || code=$?
+      ;;
+    host_sweep)
+      out=$(ip netns exec "$NS_ATTACK" python3 -c "import socket
+for x in range(2,13):
+ s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.settimeout(.05);s.connect_ex(('10.10.20.'+str(x),80));s.close()
+print('11 DMZ hosts probed')" 2>&1) || code=$?
+      ;;
+    *) echo '{"ok":false,"error":"Unknown or disallowed scenario"}'; exit 2;;
+  esac
+  python3 - "$key" "$code" "$out" <<'PY'
+import json,sys
+key,code,out=sys.argv[1],int(sys.argv[2]),sys.argv[3]
+print(json.dumps({'ok':code==0,'scenario':key,'exitCode':code,'output':out[-4000:]},ensure_ascii=False))
+PY
+}
+
+case "${1:-status}" in
+  start) start_lab; status_json;;
+  stop) stop_lab; status_json;;
+  reset) stop_lab; rm -rf "$STATE_DIR"/*; mkdir -p "$STATE_DIR"; start_lab; status_json;;
+  status) status_json;;
+  devices) devices_json;;
+  topology) topology_json;;
+  events)
+    shift
+    after=0
+    limit=400
+    while (($#)); do
+      case "$1" in
+        --after)
+          [[ "${2:-}" =~ ^[0-9]+$ ]] || { echo '{"ok":false,"error":"--after must be a non-negative integer"}'; exit 2; }
+          after="$2"; shift 2;;
+        --limit)
+          [[ "${2:-}" =~ ^[0-9]+$ ]] || { echo '{"ok":false,"error":"--limit must be a positive integer"}'; exit 2; }
+          limit="$2"; (( limit >= 1 && limit <= 2000 )) || { echo '{"ok":false,"error":"--limit must be between 1 and 2000"}'; exit 2; }
+          shift 2;;
+        *)
+          echo '{"ok":false,"error":"events accepts only --after N and --limit N"}'; exit 2;;
+      esac
+    done
+    exec python3 "$OPT_DIR/read_events.py" --after "$after" --limit "$limit";;
+  scenario) shift; scenario "${1:-}";;
+  *) echo '{"ok":false,"error":"Allowed commands: start, stop, reset, status, devices, topology, events, scenario"}'; exit 2;;
+esac
